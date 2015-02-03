@@ -1,0 +1,11 @@
+# installs the things i need for the openstack controller node
+# MariaDB hints: https://mariadb.com/blog/devops-mariadb-part-1
+---
+- name: Ensure RabbitMQ Server is installed
+  apt: name=rabbitmq-server
+
+- name: Set Guest Password
+  rabbitmq_user: user=guest password=Cisco.123
+
+- name: Restart RabbitMQ service
+  service: name=rabbitmq-server state=restarted

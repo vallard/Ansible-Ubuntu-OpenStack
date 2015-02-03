@@ -1,4 +1,4 @@
-Ansible Configuration for OpenStack Juno on Ubuntu
+Ansible Configuration for OpenStack Juno on Ubuntu 
 ==================================================
 
 Still a work in progress so that I can install OpenStack fresh. 
