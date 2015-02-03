@@ -1,0 +1,14 @@
+# installs the things i need for the openstack controller node
+# MariaDB hints: https://mariadb.com/blog/devops-mariadb-part-1
+---
+- name: Ensure MariaDB is installed
+  apt: name=mariadb-server
+
+- name: Ensure Python MySQL is installed
+  apt: name=python-mysqldb
+
+- name: Create user
+  mysql_user: name=
+
+- name: Modify configuration file to listen on all interfaces
+  linefile: dest=/etc/mysql/my.cnf regexp="^bind-address" line="bind-address=0.0.0.0"

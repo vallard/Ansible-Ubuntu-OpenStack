@@ -1,0 +1,6 @@
+---
+# file: compute.yml
+- hosts: ubuntu
+  sudo: False
+  roles:
+    - ubuntu

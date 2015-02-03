@@ -1,0 +1,42 @@
+# installs the things i need for a basic Ubuntu Image. 
+---
+- name: Make sure /etc/apt/sources.list is right.  (xCAT install changes it)
+  copy: >
+    src=../files/sources.list 
+    dest=/etc/apt/sources.list
+
+- name: Make sure proxy is set for apt
+  copy: >
+    src=../files/80proxy
+    dest=/etc/apt/apt.conf.d/80proxy
+
+- name: Check apt last update
+  stat: path=/var/cache/apt
+  register: apt_cache_stat
+
+- name: Update Everything if needed every 12 hours.
+  #apt: upgrade=full
+  apt: update_cache=yes
+  when: ansible_date_time.epoch|float - apt_cache_stat.stat.mtime > 60*60*12
+
+- name: Get VIM
+  apt: name=vim state=present 
+
+- name: Python Libraries
+  apt: name=python-software-properties state=present
+
+- name: Software Common libraries
+  apt: name=software-properties-common state=present
+
+- name: Add Juno repo
+  #apt_repository: repo="cloud-archive:juno" update_cache=yes
+  # hack below because ansible doesn't support this: 
+  # https://github.com/ansible/ansible-modules-core/issues/292
+  apt_repository: repo="deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main"
+
+- name: apt-get update
+  apt: update_cache = yes
+  when: ansible_date_time.epoch|float - apt_cache_stat.stat.mtime > 60*60*12
+
+- name: Update everything.
+  apt: upgrade=dist force=yes cache_valid_time=3600

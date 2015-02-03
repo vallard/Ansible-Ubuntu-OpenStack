@@ -1,0 +1,6 @@
+---
+# file: compute.yml
+- hosts: openstack-controllers
+  sudo: False
+  roles:
+    - openstack-controller

@@ -1,0 +1,6 @@
+---
+# file: compute.yml
+- hosts: compute
+  sudo: False
+  roles:
+    - openstack-computenode
