@@ -1,0 +1,30 @@
+# Installs and Configures Glance Database
+---
+
+# install the database layer. 
+- name: Ensure Glance Database is up. 
+  mysql_db: name=glance state=present
+  notify:
+    - Sync glance db
+    - Restart glance API
+    - Restart glance registry
+
+- name: Ensure local Glance DB user works 
+  mysql_user: name=glance 
+              password={{ glance_dbpassword }} 
+              host=localhost 
+              priv=glance.*:ALL,GRANT state=present
+  notify:
+    - Sync glance db
+    - Restart glance API
+    - Restart glance registry
+
+- name: Ensure remote Glance DB user works
+  mysql_user: name=glance 
+              password={{ glance_dbpassword }} 
+              host=% 
+              priv=glance.*:ALL,GRANT state=present
+  notify:
+    - Sync glance db
+    - Restart glance API
+    - Restart glance registry

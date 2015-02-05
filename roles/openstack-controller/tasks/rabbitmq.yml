@@ -5,7 +5,7 @@
   apt: name=rabbitmq-server
 
 - name: Set Guest Password
-  rabbitmq_user: user=guest password=Cisco.123
+  rabbitmq_user: user=guest password={{ rabbitmq_password }}
 
 - name: Restart RabbitMQ service
   service: name=rabbitmq-server state=restarted

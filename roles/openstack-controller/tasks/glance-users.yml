@@ -1,0 +1,10 @@
+# Configures Glance Users
+---
+
+- name: Ensure glance user is created
+  keystone_user: token={{ admin_token }} user=glance tenant=service password={{ glance_admin_password }} endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+- name: Ensure glance user role is ready
+  keystone_user: token={{ admin_token }} user=glance tenant=service password={{ keystone_admin_password }} role=admin endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+

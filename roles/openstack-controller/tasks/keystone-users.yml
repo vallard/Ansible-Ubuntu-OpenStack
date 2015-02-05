@@ -1,0 +1,19 @@
+# Configures Keystone Users
+---
+# Ensure the admin user is present.
+- name: Ensure Admin user is created
+  keystone_user: token={{ admin_token }} user=admin tenant=admin password={{ keystone_admin_password }} endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+- name: Ensure Admin Tenant is created
+  keystone_user: tenant=admin tenant_description="Admin Tenant" token={{admin_token}} endpoint=http://{{inventory_hostname}}:35357/v2.0
+
+- name: Ensure Service Tenant is created
+  keystone_user: tenant=service tenant_description="Service Tenant" token={{admin_token}} endpoint=http://{{inventory_hostname}}:35357/v2.0
+
+- name: Ensure Admin user role is ready
+  keystone_user: token={{ admin_token }} user=admin tenant=admin password={{ keystone_admin_password }} role=admin endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+- name: Set environment variables for root user
+  template: src=../templates/profile.j2 dest=/root/.profile
+
+# http://docs.openstack.org/juno/install-guide/install/apt/content/keystone-install.html

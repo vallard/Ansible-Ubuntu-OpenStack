@@ -1,0 +1,14 @@
+# ~/.profile: executed by Bourne-compatible login shells.
+
+if [ "$BASH" ]; then
+  if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+  fi
+fi
+
+export OS_TENANT_NAME=admin
+export OS_USERNAME=admin
+export OS_PASSWORD={{ keystone_admin_password }}
+export OS_AUTH_URL=http://{{ inventory_hostname }}:5000/v2.0
+
+mesg n

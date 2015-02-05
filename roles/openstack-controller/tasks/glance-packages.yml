@@ -1,0 +1,12 @@
+# Installs and Configures Glance 
+---
+
+- name: Ensure Glance service and client is installed
+  apt: name={{ item }} state=present
+  with_items:
+    - glance
+    - python-glanceclient
+
+- name: Remove SQLite db file
+  file: path=/var/lib/glance/glance.sqlite state=absent
+
