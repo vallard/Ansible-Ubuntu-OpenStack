@@ -17,6 +17,12 @@
 # limitations under the License.
 #
 
+- name: Restart Web Service
+  service: name={{ item }} restart
+  with_items:
+    - apache2
+    - memcached
+
 - name: Sync glance db
   shell: glance-manage db_sync
   sudo: yes
@@ -39,3 +45,16 @@
 
 - name: Restart MariaDB
   service: name=mysql state=restarted
+
+- name: Sync Nova Database
+  shell: /bin/sh -c "nova-manage db sync" nova
+
+- name: Restart Nova Server 
+  service: name={{ item }} state=restarted
+  with_items: 
+    - nova-api
+    - nova-cert
+    - nova-consoleauth
+    - nova-scheduler
+    - nova-conductor
+    - nova-novncproxy

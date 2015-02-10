@@ -1,0 +1,50 @@
+---
+# create basic external network
+
+- name: create external network
+  quantum_network: name=ext-net
+                 state=present
+                 provider_network_type=flat
+                 provider_physical_network=external
+                 router_external=yes
+                 login_password="{{ neutron_admin_password }}"
+
+- name: create external subnet
+  quantum_subnet: name=ext-subnet
+                  allocation_pool_start=172.20.199.1
+                  allocation_pool_end=172.20.199.1
+                  cidr=172.20.199.0/16
+                  enable_dhcp=false
+                  gateway_ip=172.20.1.1
+                  network_name=ext-net
+                  login_password="{{ neutron_admin_password }}"
+                  state=present
+
+# create basic tenant network 
+#
+- name: create duck network
+  quantum_network: name=duck-net
+                   login_password="{{ neutron_admin_password }}"
+
+- name: create duck subnet
+  quantum_subnet: name=duck-subnet
+                  network_name=duck-net
+                  gateway_ip=192.168.98.1
+                  cidr=192.168.98.0/24
+                  login_password="{{ neutron_admin_password }}"
+
+- name: create duck router
+  quantum_router: name=duck-router
+                  login_username=admin
+                  login_password="{{ neutron_admin_password }}"
+
+- name: Add duck-subnet as an interface to the duck-router
+  quantum_router_interface: router_name=duck-router
+                            subnet_name=duck-subnet
+                            login_password="{{ neutron_admin_password }}"
+
+- name: Attach duck router to external network
+  quantum_router_gateway: router_name=duck-router
+                          network_name=ext-net
+                          login_password="{{ neutron_admin_password }}"
+

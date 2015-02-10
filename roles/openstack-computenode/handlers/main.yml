@@ -1,0 +1,14 @@
+---
+- name: sysctl
+  shell: sysctl -p 
+
+- name: Restart Nova Compute
+  service: name={{ item }} state=restarted
+  with_items: 
+    - nova-compute
+
+- name: Restart Neutron
+  service: name={{ item }} state=restarted
+  with_items: 
+    - openvswitch-switch
+    - neutron-plugin-openvswitch-agent

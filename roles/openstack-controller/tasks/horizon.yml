@@ -1,0 +1,23 @@
+# Installs and Configures Nova
+---
+
+- name: Ensure Horizon is installed
+  apt: name={{ item }} state=present
+  with_items:
+    - openstack-dashboard
+    - apache2
+    - libapache2-mod-wsgi
+    - memcached
+    - python-memcache
+  notify:
+    - "Restart Web Service"
+
+
+
+#- name: Configure Horizon
+#  copy: dest=/etc/openstack-dashboard/local_settings.py
+#            section="{{ item.section }}"
+#            option="{{ item.option }}"
+#            value="{{ item.value }}"
+
+

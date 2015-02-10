@@ -1,6 +1,5 @@
 ---
 
-#
 # Copyright (c) 2014 Davide Guerri <davide.guerri@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,6 +44,13 @@
     - section:  paste_deploy
       option:   flavor
       value:    keystone
+    - section:  DEFAULT
+      option:   rabbit_password
+      value:    "{{ rabbitmq_password }}"
+    - section:  DEFAULT
+      option:   rabbit_userid
+      value:    "{{ rabbitmq_user }}"
+
   notify:
     - Restart glance API
 
@@ -75,5 +81,11 @@
     - section:  paste_deploy
       option:   flavor
       value:    keystone
+    - section:  DEFAULT
+      option:   rabbit_password
+      value:    "{{ rabbitmq_password }}"
+    - section:  DEFAULT
+      option:   rabbit_userid
+      value:    "{{ rabbitmq_user }}"
   notify:
     - Restart glance registry

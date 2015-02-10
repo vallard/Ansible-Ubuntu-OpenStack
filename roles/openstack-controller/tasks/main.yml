@@ -1,12 +1,7 @@
 # installs the things i need for the openstack controller node
-- include: mariasql.yml
-- include: rabbitmq.yml
-- include: keystone.yml
-- include: keystone-users.yml
-- include: keystone-maintenance.yml
-- include: keystone-endpoint.yml
-- include: glance-packages.yml
-- include: glance-database.yml
-- include: glance-endpoint.yml
-- include: glance-users.yml
-- include: glance-configuration.yml
+#- include: base-services.yml
+#- include: keystone-base.yml
+#- include: glance.yml
+#- include: nova.yml
+- include: neutron.yml
+#- include: horizon.yml

@@ -1,0 +1,4 @@
+---
+# installs base services for openstack
+- include: mariasql.yml
+- include: rabbitmq.yml

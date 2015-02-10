@@ -1,0 +1,10 @@
+---
+controller: os01
+nova_admin_password: Cisco.123
+rabbitmq_password: Cisco.123
+rabbitmq_user: openstack
+
+# snagged from: https://github.com/dguerri/openstack-keystone/blob/master/vars/main.yml
+openstack_service_env:
+  OS_SERVICE_TOKEN: "{{ admin_token }}"
+  OS_SERVICE_ENDPOINT: "http://{{ inventory_hostname }}:35357/v2.0"

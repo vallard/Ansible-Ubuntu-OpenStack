@@ -27,3 +27,6 @@
   notify:
     - Restart Keystone 
 
+
+- name: Restart Keystone
+  service: name=keystone state=restarted

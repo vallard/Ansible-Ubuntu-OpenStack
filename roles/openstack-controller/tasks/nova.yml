@@ -1,0 +1,7 @@
+---
+# everything we need for nova
+- include: nova-packages.yml
+- include: nova-database.yml
+- include: nova-endpoint.yml
+- include: nova-users.yml
+- include: nova-configuration.yml

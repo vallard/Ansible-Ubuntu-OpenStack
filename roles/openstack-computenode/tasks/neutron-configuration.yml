@@ -1,0 +1,139 @@
+---
+
+#
+# Copyright (c) 2014 Davide Guerri <davide.guerri@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Modified by vallard@benincosa.com
+- name: Set ip forwarding
+  lineinfile: dest=/etc/sysctl.conf regexp=^net.ipv4.conf.all.rp_filter line=net.ipv4.conf.all.rp_filter=0
+  notify: 
+    - sysctl
+
+- name: Set ip forwarding
+  lineinfile: dest=/etc/sysctl.conf regexp=^net.ipv4.conf.default.rp_filter line=net.ipv4.conf.default.rp_filter=0
+  notify: 
+    - sysctl
+
+- name: Get IP address of compute node.
+  shell: "ifconfig eth0 | grep 'inet addr' | awk '{print $2}' | awk -F: '{print $2}'"
+  register: compute_ip_address
+
+
+- name: Neutron Configuration
+  ini_file: dest=/etc/neutron/neutron.conf
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  with_items:
+    - section:  DEFAULT
+      option:   rpc_backend
+      value:    rabbit
+    - section:  DEFAULT
+      option:   rabbit_host
+      value:    "{{ controller }}"
+    - section:  DEFAULT
+      option:   rabbit_password
+      value:    "{{ rabbitmq_password }}"
+    - section:  DEFAULT
+      option:   rabbit_userid
+      value:    "{{ rabbitmq_user }}"
+
+    - section:  DEFAULT
+      option:   auth_strategy
+      value:    keystone
+
+    - section:  keystone_authtoken
+      option:   auth_uri
+      value:    http://{{ controller }}:5000/v2.0
+    - section:  keystone_authtoken
+      option:   identity_uri
+      value:    http://{{ controller }}:35357
+    - section:  keystone_authtoken
+      option:   admin_tenant_name
+      value:    service
+    - section:  keystone_authtoken
+      option:   admin_user
+      value:    neutron
+    - section:  keystone_authtoken
+      option:   admin_password
+      value:    "{{ neutron_admin_password }}"
+
+    - section:  DEFAULT
+      option:   core_plugin
+      value:    ml2
+    - section:  DEFAULT
+      option:   service_plugins
+      value:    router
+    - section:  DEFAULT
+      option:   allow_overlapping_ips
+      value:    True
+
+    - section:  DEFAULT
+      option:   verbose
+      value:    True
+  notify:
+    - Restart Neutron
+
+
+- name: Configure Modular Layer 2 plugin
+  ini_file: dest=/etc/neutron/plugins/ml2/ml2_conf.ini
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  with_items:
+# ml2
+    - section:  ml2
+      option:   type_drivers
+      value:    flat,gre
+    - section:  ml2
+      option:   tenant_network_types
+      value:    gre
+    - section:  ml2
+      option:   mechanism_drivers
+      value:    openvswitch
+
+# ml2_type_gre
+    - section:  ml2_type_gre
+      option:   tunnel_id_ranges
+      value:    1:1000
+
+# security group
+    - section:  security_group
+      option:   enable_security_group
+      value:    True
+    - section:  security_group
+      option:   enable_ipset
+      value:    True
+    - section:  security_group
+      option:   firewall_driver
+      value:    neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+
+### part that might just be on separate neutron / network node. 
+# ovs part 
+    - section:  ovs
+      option:   local_ip 
+      value:    "{{ compute_ip_address.stdout }}"
+    - section:  ovs
+      option:   enable_tunneling
+      value:    True
+# agent
+    - section:  agent
+      option:   tunnel_types
+      value:    gre
+  notify:
+    - Restart Neutron
+
+

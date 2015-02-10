@@ -1,0 +1,9 @@
+---
+# everything we need for neutron
+
+#- include: neutron-packages.yml
+#- include: neutron-database.yml
+#- include: neutron-endpoint.yml
+#- include: neutron-users.yml
+#- include: neutron-configuration.yml
+- include: neutron-networks.yml

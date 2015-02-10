@@ -1,0 +1,5 @@
+# installs the things i need for the openstack compute node
+- include: nova-packages.yml
+- include: nova-configuration.yml
+- include: neutron-packages.yml
+- include: neutron-configuration.yml

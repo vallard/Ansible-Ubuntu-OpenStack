@@ -1,12 +1,25 @@
 ---
+admin_token: 7931ba7e7ba88e90b3e1
+
 keystone_dbpassword: Cisco.123
 glance_dbpassword: Cisco.123
-admin_token: 7931ba7e7ba88e90b3e1
+nova_dbpassword: Cisco.123
+neutron_dbpassword: Cisco.123
+
 keystone_admin_password: Cisco.123
 glance_admin_password: Cisco.123
+nova_admin_password: Cisco.123
+neutron_admin_password: Cisco.123
+
 rabbitmq_password: Cisco.123
+rabbitmq_user: openstack
+
+external_network_bridge_interface: br-ex
+external_network_bridge_ip: 172.20.101.1
+metadata_shared_secret: 234jwji3j3k434f388fej
 
 # snagged from: https://github.com/dguerri/openstack-keystone/blob/master/vars/main.yml
 openstack_service_env:
   OS_SERVICE_TOKEN: "{{ admin_token }}"
   OS_SERVICE_ENDPOINT: "http://{{ inventory_hostname }}:35357/v2.0"
+

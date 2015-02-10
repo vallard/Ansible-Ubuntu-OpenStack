@@ -1,0 +1,8 @@
+# Installs and Configures Neutron
+---
+
+- name: Ensure Neutron is installed
+  apt: name={{ item }} state=present force=yes
+  with_items:
+    - neutron-plugin-ml2
+    - neutron-plugin-openvswitch-agent

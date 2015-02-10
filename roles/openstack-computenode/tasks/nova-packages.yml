@@ -1,0 +1,11 @@
+# Installs and Configures Nova
+---
+
+- name: Ensure Nova is installed
+  apt: name={{ item }} state=present force=yes
+  with_items:
+    - python-software-properties
+    - software-properties-common
+    - nova-compute 
+    - python-novaclient
+    - sysfsutils

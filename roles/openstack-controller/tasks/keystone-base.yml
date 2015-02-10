@@ -1,0 +1,6 @@
+---
+# keystone requirements
+- include: keystone.yml
+- include: keystone-users.yml
+- include: keystone-maintenance.yml
+- include: keystone-endpoint.yml

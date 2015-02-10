@@ -1,0 +1,285 @@
+---
+
+#
+# Copyright (c) 2014 Davide Guerri <davide.guerri@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Modified by vallard@benincosa.com
+- name: Get Service Tenant ID
+  shell: keystone tenant-list | awk '/ service / {print $2}'
+  register: service_tenant_id
+  changed_when: false
+  environment: openstack_service_env
+
+- name: Configure Neutron
+  ini_file: dest=/etc/neutron/neutron.conf
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  with_items:
+# database
+    - section:  database
+      option:   connection
+      value:    mysql://neutron:{{ neutron_dbpassword }}@{{ inventory_hostname }}/neutron
+# rabbit mq
+    - section:  DEFAULT
+      option:   rpc_backend
+      value:    rabbit
+    - section:  DEFAULT
+      option:   rabbit_host
+      value:    "{{ inventory_hostname }}"
+    - section:  DEFAULT
+      option:   rabbit_password
+      value:    "{{ rabbitmq_password }}"
+    - section:  DEFAULT
+      option:   rabbit_userid
+      value:    "{{ rabbitmq_user }}"
+
+    - section:  DEFAULT
+      option:   auth_strategy
+      value:    keystone
+
+    - section:  AGENT
+      option:   root_helper
+      value:    sudo /usr/bin/neutron-rootwrap /etc/neutron/rootwrap.conf
+# Keystone section
+    - section:  keystone_authtoken
+      option:   auth_uri
+      value:    http://{{ inventory_hostname }}:5000/v2.0
+    - section:  keystone_authtoken
+      option:   identity_uri
+      value:    http://{{ inventory_hostname }}:35357
+    - section:  keystone_authtoken
+      option:   admin_tenant_name
+      value:    service
+    - section:  keystone_authtoken
+      option:   admin_user
+      value:    neutron
+    - section:  keystone_authtoken
+      option:   admin_password
+      value:    "{{ neutron_admin_password }}"
+
+# ML2
+    - section:  DEFAULT
+      option:   core_plugin
+      value:    ml2
+    - section:  DEFAULT
+      option:   service_plugins
+      value:    router
+    - section:  DEFAULT
+      option:   allow_overlapping_ips
+      value:    True
+
+# Compute section
+    - section:  DEFAULT
+      option:   notify_nova_on_port_status_changes
+      value:    TRUE
+    - section:  DEFAULT
+      option:   notify_nova_on_port_data_changes
+      value:    TRUE
+    - section:  DEFAULT
+      option:   nova_url
+      value:    http://{{ inventory_hostname }}:8774/v2
+    - section:  DEFAULT
+      option:   nova_admin_auth_url
+      value:    http://{{ inventory_hostname }}:35357/v2.0
+    - section:  DEFAULT
+      option:   nova_region_name
+      value:    regionOne
+    - section:  DEFAULT
+      option:   nova_admin_username
+      value:    nova
+    - section:  DEFAULT
+      option:   nova_admin_tenant_id
+      value:    "{{ service_tenant_id.stdout }}"
+    - section:  DEFAULT
+      option:   nova_admin_password
+      value:    "{{ nova_admin_password }}"
+
+
+- name: Configure Modular Layer 2 plugin
+  ini_file: dest=/etc/neutron/plugins/ml2/ml2_conf.ini
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  with_items:
+# ml2
+    - section:  ml2
+      option:   type_drivers
+      value:    flat,gre
+    - section:  ml2
+      option:   tenant_network_types
+      value:    gre
+    - section:  ml2
+      option:   mechanism_drivers
+      value:    openvswitch
+
+# ml2_type_flat
+    - section: ml2_type_flat
+      option: flat_networks
+      value: external
+
+# ml2_type_gre
+    - section:  ml2_type_gre
+      option:   tunnel_id_ranges
+      value:    1:1000
+
+# security group
+    - section:  security_group
+      option:   enable_security_group
+      value:    True
+    - section:  security_group
+      option:   enable_ipset
+      value:    True
+    - section:  security_group
+      option:   firewall_driver
+      value:    neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+
+### part that might just be on separate neutron / network node. 
+# ovs part 
+    - section:  ovs
+      option:   local_ip 
+      value:    "{{ external_network_bridge_ip }}"
+    - section:  ovs
+      option:   enable_tunneling
+      value:    True
+    - section:  ovs
+      option:   bridge_mappings
+      value:    "external:{{ external_network_bridge_interface}}"
+# agent
+    - section:  agent
+      option:   tunnel_types
+      value:    gre
+
+# database
+    - section:  database
+      option:   connection
+      value:    mysql://neutron:{{ neutron_dbpassword }}@{{ inventory_hostname }}/neutron
+
+      
+- name: Configure Modular Layer 3 Agent
+  ini_file: dest=/etc/neutron/l3_agent.ini
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  with_items:
+# ml3
+    - section:  DEFAULT
+      option:   interface_driver
+      value:    neutron.agent.linux.interface.OVSInterfaceDriver
+    - section:  DEFAULT
+      option:   use_namespaces
+      value:    True
+    - section:  DEFAULT
+      option:   external_network_bridge
+      value:    "{{ external_network_bridge_interface }}"
+    - section:  DEFAULT
+      option:   router_delete_namespaces
+      value:    True
+    - section:  DEFAULT
+      option:   verbose
+      value:    True
+
+    - section:  DEFAULT
+      option:   rabbit_password
+      value:    "{{ rabbitmq_password }}"
+    - section:  DEFAULT
+      option:   rabbit_userid
+      value:    "{{ rabbitmq_user }}"
+
+# DHCP service
+- name: Configure DHCP agent
+  ini_file: dest=/etc/neutron/dhcp_agent.ini
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  with_items:
+# ml3
+    - section:  DEFAULT
+      option:   interface_driver
+      value:    neutron.agent.linux.interface.OVSInterfaceDriver
+    - section:  DEFAULT
+      option:   dhcp_driver
+      value:    neutron.agent.linux.dhcp.Dnsmasq
+    - section:  DEFAULT
+      option:   use_namespaces
+      value:    True
+    - section:  DEFAULT
+      option:   verbose
+      value:    True
+    - section:  DEFAULT
+      option:   rabbit_password
+      value:    "{{ rabbitmq_password }}"
+    - section:  DEFAULT
+      option:   rabbit_userid
+      value:    "{{ rabbitmq_user }}"
+    
+
+- name: Configure Neutron Metadata Agent
+  ini_file: dest=/etc/neutron/metadata_agent.ini
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  with_items:
+    - section:  DEFAULT
+      option:   auth_uri
+      value:    http://{{ inventory_hostname }}:5000/v2.0
+    - section:  DEFAULT
+      option:   auth_region
+      value:    regionOne
+    - section:  DEFAULT
+      option:   admin_tenant_name
+      value:    service
+    - section:  DEFAULT
+      option:   admin_user
+      value:    neutron
+    - section:  DEFAULT
+      option:   admin_password
+      value:    "{{ neutron_admin_password }}"
+
+    - section:  DEFAULT
+      option:   nova_metadata_ip
+      value:    "{{ inventory_hostname }}"
+
+    - section:  DEFAULT
+      option:   metadata_proxy_shared_secret
+      value:    "{{ metadata_shared_secret }}"
+
+    - section:  DEFAULT
+      option:   verbose
+      value:    True
+
+    - section:  DEFAULT
+      option:   rabbit_password
+      value:    "{{ rabbitmq_password }}"
+    - section:  DEFAULT
+      option:   rabbit_userid
+      value:    "{{ rabbitmq_user }}"
+
+ # notify:
+ #   - Sync Nova Database
+ #   - Restart Nova Server 
+- name: Populate Neutron Database
+  shell: /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade juno" neutron
+
+- name: Restart Compute and Neutron
+  service: name={{ item }} state=restarted
+  with_items: 
+    - neutron-server
+    - openvswitch-switch
+
+- name: ensure the external bridge is up. 
+  openvswitch_bridge: bridge={{external_network_bridge_interface}} state=present
+

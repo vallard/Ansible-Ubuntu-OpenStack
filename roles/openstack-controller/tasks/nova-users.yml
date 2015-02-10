@@ -1,0 +1,10 @@
+# Configures Nova Users
+---
+
+- name: Ensure nova user is created
+  keystone_user: user=nova tenant=service password={{ nova_admin_password }} token={{ admin_token }} endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+- name: Ensure nova user role is ready
+  keystone_user: user=nova tenant=service role=admin token={{ admin_token }} endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+

@@ -1,0 +1,18 @@
+# Installs and Configures Nova Database
+---
+
+# install the database layer. 
+- name: Ensure Nova Database is up. 
+  mysql_db: name=nova state=present
+
+- name: Ensure local Nova DB user works 
+  mysql_user: name=nova 
+              password={{ nova_dbpassword }} 
+              host=localhost 
+              priv=nova.*:ALL,GRANT state=present
+
+- name: Ensure remote Nova DB user works
+  mysql_user: name=nova 
+              password={{ nova_dbpassword }} 
+              host=% 
+              priv=nova.*:ALL,GRANT state=present

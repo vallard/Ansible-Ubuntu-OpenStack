@@ -1,0 +1,7 @@
+---
+# everything needed for glance
+- include: glance-packages.yml
+- include: glance-database.yml
+- include: glance-endpoint.yml
+- include: glance-users.yml
+- include: glance-configuration.yml

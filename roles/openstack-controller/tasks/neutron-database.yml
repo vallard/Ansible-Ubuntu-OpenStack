@@ -1,0 +1,18 @@
+# Installs and Configures Neutron Database
+---
+
+# install the database layer. 
+- name: Ensure Neutron Database is up. 
+  mysql_db: name=neutron state=present
+
+- name: Ensure local Neutron DB user works 
+  mysql_user: name=neutron 
+              password={{ neutron_dbpassword }} 
+              host=localhost 
+              priv=neutron.*:ALL,GRANT state=present
+
+- name: Ensure remote Neutron DB user works
+  mysql_user: name=neutron 
+              password={{ neutron_dbpassword }} 
+              host=% 
+              priv=neutron.*:ALL,GRANT state=present

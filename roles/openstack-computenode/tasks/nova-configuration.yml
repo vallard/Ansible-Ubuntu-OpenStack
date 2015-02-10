@@ -1,0 +1,138 @@
+---
+
+#
+# Copyright (c) 2014 Davide Guerri <davide.guerri@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Modified by vallard@benincosa.com
+- name: Get IP address of compute node.
+  shell: "ifconfig eth0 | grep 'inet addr' | awk '{print $2}' | awk -F: '{print $2}'"
+  register: compute_ip_address
+
+- name: Remove sqlite file
+  file: name=/var/lib/nova/nova.sqlite state=absent
+
+- name: Configure Nova
+  ini_file: dest=/etc/nova/nova.conf
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  with_items:
+    - section:  DEFAULT
+      option:   rpc_backend
+      value:    rabbit
+    - section:  DEFAULT
+      option:   rabbit_host
+      value:    "{{ controller }}"
+    - section:  DEFAULT
+      option:   rabbit_password
+      value:    "{{ rabbitmq_password }}"
+    - section:  DEFAULT
+      option:   rabbit_userid
+      value:    "{{ rabbitmq_user }}"
+
+    - section:  DEFAULT
+      option:   auth_strategy
+      value:    keystone
+
+    - section:  keystone_authtoken
+      option:   auth_uri
+      value:    http://{{ controller }}:5000/v2.0
+    - section:  keystone_authtoken
+      option:   identity_uri
+      value:    http://{{ controller }}:35357
+    - section:  keystone_authtoken
+      option:   admin_tenant_name
+      value:    service
+    - section:  keystone_authtoken
+      option:   admin_user
+      value:    nova
+    - section:  keystone_authtoken
+      option:   admin_password
+      value:    "{{ nova_admin_password }}"
+
+    - section:  DEFAULT
+      option:   my_ip
+      value:    "{{ compute_ip_address.stdout }}"
+
+    - section:  DEFAULT
+      option:   vnc_enabled
+      value:    True
+    - section:  DEFAULT
+      option:   vnceserver_listen
+      value:    0.0.0.0
+    - section:  DEFAULT
+      option:   vncserver_proxy_client_address
+      value:    "{{ inventory_hostname }}"
+    - section:  DEFAULT
+      option:   novncproxy_base_url 
+      value:    http://{{ controller }}:6080/vnc_auto.html
+
+    - section:  glance
+      option:   host
+      value:    "{{ inventory_hostname }}"
+
+    - section:  DEFAULT
+      option:   verbose
+      value:    True
+# Configure this for Neutron
+    - section:  DEFAULT
+      option:   network_api_class
+      value:    nova.network.neutronv2.api.API
+    - section:  DEFAULT
+      option:   security_group_api
+      value:    neutron
+    - section:  DEFAULT
+      option:   linuxnet_interface_driver 
+      value:    nova.network.linux_net.LinuxOVSInterfaceDriver
+    - section:  DEFAULT
+      option:   firewall_driver
+      value:    nova.virt.firewall.NoopFirewallDriver
+
+    - section:  neutron
+      option:   url
+      value:    http://{{ controller }}:9696
+    - section:  neutron
+      option:   auth_strategy
+      value:    keystone
+    - section:  neutron
+      option:   admin_auth_url
+      value:    http://{{ controller }}:35357/v2.0
+    - section:  neutron
+      option:   admin_tenant_name
+      value:    service
+    - section:  neutron
+      option:   admin_username
+      value:    neutron
+    - section:  neutron
+      option:   admin_password
+      value:    "{{ neutron_admin_password }}"
+  notify:
+    - Restart Nova Compute
+
+
+- name: Configure Nova Compute
+  ini_file: dest=/etc/nova/nova-compute.conf
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  with_items:
+    - section:  libvirt
+      option:   virt_type
+      value:    quemu
+  notify: 
+    - Restart Nova Compute
+
+

@@ -1,0 +1,16 @@
+# Installs and Configures Nova
+---
+
+- name: Ensure Neutron is installed
+  apt: name={{ item }} state=present
+  with_items:
+    - neutron-server
+    - neutron-plugin-ml2
+    - python-neutronclient
+    - neutron-plugin-openvswitch-agent
+    - neutron-l3-agent
+    - neutron-dhcp-agent
+
+- name: Remove SQLite db file
+  file: path=/var/lib/neutron/neutron.sqlite state=absent
+

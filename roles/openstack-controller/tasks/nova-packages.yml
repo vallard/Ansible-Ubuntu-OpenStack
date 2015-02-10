@@ -1,0 +1,17 @@
+# Installs and Configures Nova
+---
+
+- name: Ensure Nova is installed
+  apt: name={{ item }} state=present
+  with_items:
+    - nova-api
+    - nova-cert
+    - nova-conductor
+    - nova-consoleauth
+    - nova-novncproxy
+    - nova-scheduler 
+    - python-novaclient
+
+- name: Remove SQLite db file
+  file: path=/var/lib/nova/nova.sqlite state=absent
+
