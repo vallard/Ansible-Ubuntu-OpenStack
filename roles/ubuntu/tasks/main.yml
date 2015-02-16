@@ -10,33 +10,40 @@
     src=../files/80proxy
     dest=/etc/apt/apt.conf.d/80proxy
 
-- name: Check apt last update
-  stat: path=/var/cache/apt
-  register: apt_cache_stat
-
-- name: Update Everything if needed every 12 hours.
-  #apt: upgrade=full
-  apt: update_cache=yes
-  when: ansible_date_time.epoch|float - apt_cache_stat.stat.mtime > 60*60*12
-
-- name: Get VIM
-  apt: name=vim state=present 
-
-- name: Python Libraries
-  apt: name=python-software-properties state=present
-
-- name: Software Common libraries
-  apt: name=software-properties-common state=present
-
 - name: Add Juno repo
-  #apt_repository: repo="cloud-archive:juno" update_cache=yes
-  # hack below because ansible doesn't support this: 
-  # https://github.com/ansible/ansible-modules-core/issues/292
   apt_repository: repo="deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main"
+  register: result
 
-- name: apt-get update
-  apt: update_cache = yes
-  when: ansible_date_time.epoch|float - apt_cache_stat.stat.mtime > 60*60*12
+- name: Add keyring
+  apt: name=ubuntu-cloud-keyring
 
-- name: Update everything.
-  apt: upgrade=dist force=yes cache_valid_time=3600
+- name: Update Everything
+  apt: upgrade=full update_cache=yes
+  when: result|success
+
+- name: Update Distribution
+  apt: upgrade=dist force=yes 
+  when: result|success
+
+- name: Install a bunch of Items
+  apt: name={{ item }} state=present
+  with_items:
+    - vim
+    - python-software-properties
+    - software-properties-common 
+    - qemu-kvm 
+    - libvirt-bin 
+    - ubuntu-vm-builder 
+    - bridge-utils
+
+- name: Get hostname last number
+  shell: hostname | awk -F 0 '{print $2 }'
+  register: last_octet
+
+- name: Setup Ethernet Network
+  template: src=../templates/interfaces.js dest=/etc/network/interfaces
+  register: result
+
+- name: Restart interfaces 
+  shell: ifup br-ex && ifconfig eth0 0
+  when: result|success

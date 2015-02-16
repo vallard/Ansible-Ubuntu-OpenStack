@@ -18,7 +18,7 @@
 #
 
 - name: Restart Web Service
-  service: name={{ item }} restart
+  service: name={{ item }} state=restart
   with_items:
     - apache2
     - memcached
@@ -37,8 +37,6 @@
 - name: Restart glance registry
   service: name=glance-registry state=restarted
 
-- name: Initialize Keystone DB
-  shell: /bin/sh -c "keystone-manage db_sync" keystone
 
 - name: Restart Keystone
   service: name=keystone state=restarted

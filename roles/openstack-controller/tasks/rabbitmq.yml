@@ -12,8 +12,10 @@
                  read_priv=.*
                  write_priv=.*
                  state=present
+  register: result
 - name: Remove guest user
   rabbitmq_user: user=guest state=absent
 
 - name: Restart RabbitMQ service
   service: name=rabbitmq-server state=restarted
+  when: result|changed

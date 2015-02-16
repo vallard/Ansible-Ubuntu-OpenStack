@@ -11,13 +11,3 @@
     - python-memcache
   notify:
     - "Restart Web Service"
-
-
-
-#- name: Configure Horizon
-#  copy: dest=/etc/openstack-dashboard/local_settings.py
-#            section="{{ item.section }}"
-#            option="{{ item.option }}"
-#            value="{{ item.value }}"
-
-

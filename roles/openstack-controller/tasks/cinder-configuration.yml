@@ -1,0 +1,81 @@
+---
+
+# Copyright (c) 2014 Davide Guerri <davide.guerri@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Modified by vallard@benincosa.com
+
+- name: Configure Cinder Configuration
+  ini_file: dest=/etc/cinder/cinder.conf
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  with_items:
+    - section:  database
+      option:   connection
+      value:    mysql://cinder:{{ cinder_dbpassword }}@{{ inventory_hostname }}/cinder
+
+    - section:  DEFAULT
+      option:   rabbit_password
+      value:    "{{ rabbitmq_password }}"
+    - section:  DEFAULT
+      option:   rabbit_userid
+      value:    "{{ rabbitmq_user }}"
+    - section:  DEFAULT
+      option:   rpc_backend
+      value:    rabbit
+
+    - section:  DEFAULT
+      option:   auth_strategy
+      value:    keystone
+
+    - section:  keystone_authtoken
+      option:   auth_uri
+      value:    http://{{ inventory_hostname }}:5000/v2.0
+    - section:  keystone_authtoken
+      option:   identity_uri
+      value:    http://{{ inventory_hostname }}:35357
+    - section:  keystone_authtoken
+      option:   admin_tenant_name
+      value:    service
+    - section:  keystone_authtoken
+      option:   admin_user
+      value:    cinder
+    - section:  keystone_authtoken
+      option:   admin_password
+      value:    "{{ cinder_admin_password }}"
+
+    - section:  DEFAULT
+      option:   my_ip
+      value:    "{{ controller_ip }}"
+
+    - section:  DEFAULT
+      option:   glance_host
+      value:    "{{ inventory_hostname }}"
+
+    - section:  DEFAULT
+      option:   Verbose
+      value:    True
+
+- name: populate db sync
+  shell: /bin/sh -c "cinder-manage db sync" cinder
+
+- name: restart services
+  service: name={{ item }} state=restarted
+  with_items: 
+    - cinder-scheduler
+    - cinder-api
+    - tgt 
+    - cinder-volume

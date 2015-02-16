@@ -372,7 +372,7 @@ rabbit_password={{ rabbitmq_password }}
 # Print more verbose output (set logging level to INFO instead
 # of default WARNING level). (boolean value)
 #verbose=false
-verbose=true
+verbose=True
 
 # Log output to standard error (boolean value)
 #use_stderr=true
@@ -593,26 +593,6 @@ verbose=true
 
 [database]
 
-#
-# Options defined in keystone.openstack.common.db.options
-#
-
-# The file name to use with SQLite (string value)
-#sqlite_db=keystone.sqlite
-
-# If True, SQLite uses synchronous mode (boolean value)
-#sqlite_synchronous=true
-
-# The backend to use for db (string value)
-# Deprecated group/name - [DEFAULT]/db_backend
-#backend=sqlalchemy
-
-# The SQLAlchemy connection string used to connect to the
-# database (string value)
-# Deprecated group/name - [DEFAULT]/sql_connection
-# Deprecated group/name - [DATABASE]/sql_connection
-# Deprecated group/name - [sql]/connection
-#connection=<None>
 connection = mysql://keystone:{{ keystone_dbpassword }}@{{ inventory_hostname }}/keystone
 
 # including the default, overrides any server-set SQL mode. To
@@ -1163,6 +1143,7 @@ connection = mysql://keystone:{{ keystone_dbpassword }}@{{ inventory_hostname }}
 # An implementation of the backend for persisting revocation
 # events. (string value)
 #driver=keystone.contrib.revoke.backends.kvs.Revoke
+driver=keystone.contrib.revoke.backends.sql.Revoke
 
 # This value (calculated in seconds) is added to token
 # expiration before a revocation event may be removed from the
@@ -1285,6 +1266,7 @@ provider = keystone.token.providers.uuid.Provider
 
 # Keystone Token persistence backend driver. (string value)
 #driver=keystone.token.backends.sql.Token
+driver = keystone.token.persistence.backends.sql.Token
 
 # Toggle for token system cacheing. This has no effect unless
 # global caching is enabled. (boolean value)

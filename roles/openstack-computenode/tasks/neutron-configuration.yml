@@ -28,7 +28,7 @@
     - sysctl
 
 - name: Get IP address of compute node.
-  shell: "ifconfig eth0 | grep 'inet addr' | awk '{print $2}' | awk -F: '{print $2}'"
+  shell: "ifconfig br-ex | grep 'inet addr' | awk '{print $2}' | awk -F: '{print $2}'"
   register: compute_ip_address
 
 
@@ -70,6 +70,9 @@
     - section:  keystone_authtoken
       option:   admin_password
       value:    "{{ neutron_admin_password }}"
+    - section:  keystone_authtoken
+      option:   auth_host
+      value:    "{{ controller }}"
 
     - section:  DEFAULT
       option:   core_plugin

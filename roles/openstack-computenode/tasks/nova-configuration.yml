@@ -18,7 +18,7 @@
 #
 # Modified by vallard@benincosa.com
 - name: Get IP address of compute node.
-  shell: "ifconfig eth0 | grep 'inet addr' | awk '{print $2}' | awk -F: '{print $2}'"
+  shell: "ifconfig br-ex | grep 'inet addr' | awk '{print $2}' | awk -F: '{print $2}'"
   register: compute_ip_address
 
 - name: Remove sqlite file
@@ -82,7 +82,7 @@
 
     - section:  glance
       option:   host
-      value:    "{{ inventory_hostname }}"
+      value:    "{{ controller }}"
 
     - section:  DEFAULT
       option:   verbose
@@ -131,7 +131,7 @@
   with_items:
     - section:  libvirt
       option:   virt_type
-      value:    quemu
+      value:    qemu
   notify: 
     - Restart Nova Compute
 

@@ -14,19 +14,17 @@
 
 - name: Ensure local Keystone DB user works 
   mysql_user: name=keystone password={{ keystone_dbpassword }} host=localhost priv=keystone.*:ALL,GRANT state=present
-  notify: 
-    - Initialize Keystone DB
 
 - name: Ensure remote Keystone DB user works
   mysql_user: name=keystone password={{ keystone_dbpassword }} host=% priv=keystone.*:ALL,GRANT state=present
-  notify: 
-    - Initialize Keystone DB
 
 - name: Set keystone.conf correctly
   template: src=../templates/keystone.conf.j2 dest=/etc/keystone/keystone.conf
-  notify:
-    - Restart Keystone 
+  register: result
 
+- name: Initialize Keystone DB
+  shell: /bin/sh -c "keystone-manage db_sync" keystone
+  when: result|changed
 
 - name: Restart Keystone
   service: name=keystone state=restarted

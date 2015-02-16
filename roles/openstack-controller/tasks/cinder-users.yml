@@ -1,0 +1,10 @@
+# Configures Cinder Users
+---
+
+- name: Ensure cinder user is created
+  keystone_user: token={{ admin_token }} user=cinder tenant=service password={{ cinder_admin_password }} endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+- name: Ensure cinder user role is ready
+  keystone_user: token={{ admin_token }} user=cinder tenant=service password={{ keystone_admin_password }} role=admin endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+

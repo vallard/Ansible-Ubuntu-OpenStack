@@ -1,0 +1,7 @@
+---
+# everything needed for cinder
+- include: cinder-packages.yml
+- include: cinder-database.yml
+- include: cinder-endpoint.yml
+- include: cinder-users.yml
+- include: cinder-configuration.yml

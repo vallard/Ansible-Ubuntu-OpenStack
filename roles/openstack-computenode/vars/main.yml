@@ -1,6 +1,7 @@
 ---
 controller: os01
 nova_admin_password: Cisco.123
+neutron_admin_password: Cisco.123
 rabbitmq_password: Cisco.123
 rabbitmq_user: openstack
 

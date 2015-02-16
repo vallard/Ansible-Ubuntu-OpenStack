@@ -1,0 +1,53 @@
+---
+
+#
+# Copyright (c) 2014 Davide Guerri <davide.guerri@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+- name: "Dump service list"
+  shell: keystone service-list
+  register: service_list
+  changed_when: false
+  environment: openstack_service_env
+
+- name: "Dump endpoint list"
+  shell: keystone endpoint-list
+  register: endpoint_list
+  changed_when: false
+  environment: openstack_service_env
+
+- name: Create the service entity for the block storage service
+  shell: keystone service-create --name cinder --type volume --description="OpenStack Block Storage"
+  environment: openstack_service_env
+  when: "service_list.stdout.find('cinder') == -1"
+
+- name: "Dump volume service id"
+  shell: keystone service-list | awk '/ volume / {print $2}'
+  register: volume_service_id
+  changed_when: false
+  environment: openstack_service_env
+
+# modified env variables from original.  See:
+# https://github.com/dguerri/openstack-keystone/blob/master/tasks/endpoints.yml
+- name: Create the API endpoint for the Image service
+  shell: >
+    keystone endpoint-create \
+      --service-id={{ volume_service_id.stdout }} \
+      --publicurl=http://{{ inventory_hostname }}:8776/v1/%\(tenant_id\)s \
+      --internalurl=http://{{ inventory_hostname }}:8776/v1/%\(tenant_id\)s \
+      --adminurl=http://{{ inventory_hostname }}:8776/v1/%\(tenant_id\)s \
+      --region regionOne
+  when: "endpoint_list.stdout.find('{{ volume_service_id.stdout }}') == -1"
+  environment: openstack_service_env

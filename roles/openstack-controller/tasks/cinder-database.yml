@@ -1,0 +1,18 @@
+# Installs and Configures Cinder Database
+---
+
+# install the database layer. 
+- name: Ensure Cinder Database is up. 
+  mysql_db: name=cinder state=present
+
+- name: Ensure local Cinder DB user works 
+  mysql_user: name=cinder 
+              password={{ cinder_dbpassword }} 
+              host=localhost 
+              priv=cinder.*:ALL,GRANT state=present
+
+- name: Ensure remote Cinder DB user works
+  mysql_user: name=cinder 
+              password={{ cinder_dbpassword }} 
+              host=% 
+              priv=cinder.*:ALL,GRANT state=present
