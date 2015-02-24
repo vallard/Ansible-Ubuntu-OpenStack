@@ -6,3 +6,4 @@
 - include: neutron.yml
 - include: horizon.yml
 - include: cinder.yml
+- include: heat.yml

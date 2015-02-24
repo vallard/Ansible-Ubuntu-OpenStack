@@ -19,22 +19,26 @@
 
 - name: Update Everything
   apt: upgrade=full update_cache=yes
-  when: result|success
+  when: result|changed
 
 - name: Update Distribution
   apt: upgrade=dist force=yes 
-  when: result|success
+  when: result|changed
 
-- name: Install a bunch of Items
+- name: Install a few packages
   apt: name={{ item }} state=present
   with_items:
     - vim
     - python-software-properties
     - software-properties-common 
-    - qemu-kvm 
-    - libvirt-bin 
-    - ubuntu-vm-builder 
+    #- libvirt-bin 
     - bridge-utils
+
+- name: Install some more packages
+  apt: name={{ item }} state=present
+  with_items:
+    - qemu-kvm 
+    - ubuntu-vm-builder 
 
 - name: Get hostname last number
   shell: hostname | awk -F 0 '{print $2 }'
@@ -46,4 +50,4 @@
 
 - name: Restart interfaces 
   shell: ifup br-ex && ifconfig eth0 0
-  when: result|success
+  when: result|changed

@@ -1,0 +1,14 @@
+# Installs and Configures Heat
+---
+
+- name: Ensure Heat is installed
+  apt: name={{ item }} state=present
+  with_items:
+    - heat-api 
+    - heat-api-cfn 
+    - heat-engine 
+    - python-heatclient
+
+- name: Remove SQLite db file
+  file: path=/var/lib/heat/heat.sqlite state=absent
+

@@ -1,0 +1,88 @@
+---
+
+#
+# Copyright (c) 2014 Davide Guerri <davide.guerri@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Modified by vallard@benincosa.com
+
+- name: Configure Heat
+  ini_file: dest=/etc/heat/heat.conf
+            section="{{ item.section }}"
+            option="{{ item.option }}"
+            value="{{ item.value }}"
+  register: result
+  with_items:
+# database
+    - section:  database
+      option:   connection
+      value:    mysql://heat:{{ heat_dbpassword }}@{{ inventory_hostname }}/heat
+# rabbitmq
+    - section:  DEFAULT
+      option:   rpc_backend
+      value:    rabbit
+    - section:  DEFAULT
+      option:   rabbit_host
+      value:    "{{ inventory_hostname }}"
+    - section:  DEFAULT
+      option:   rabbit_password
+      value:    "{{ rabbitmq_password }}"
+    - section:  DEFAULT
+      option:   rabbit_userid
+      value:    "{{ rabbitmq_user }}"
+# keystone
+    - section:  keystone_authtoken
+      option:   auth_uri
+      value:    http://{{ inventory_hostname }}:5000/v2.0
+    - section:  keystone_authtoken
+      option:   identity_uri
+      value:    http://{{ inventory_hostname }}:35357
+    - section:  keystone_authtoken
+      option:   admin_tenant_name
+      value:    service
+    - section:  keystone_authtoken
+      option:   admin_user
+      value:    heat
+    - section:  keystone_authtoken
+      option:   admin_password
+      value:    "{{ heat_admin_password }}"
+# ec2authtoken
+    - section:  ec2authtoken
+      option:   auth_uri
+      value:    http://{{ inventory_hostname }}:5000/v2.0
+# meta and wait
+    - section:  DEFAULT
+      option:   heat_metadata_server_url
+      value:    http://{{ inventory_hostname }}:8000
+    - section:  DEFAULT
+      option:   heat_waitcondition_server_url
+      value:    http://{{ inventory_hostname }}:8000/v1/waitcondition
+# Verbose
+    - section:  DEFAULT
+      option:   verbose
+      value:    False
+
+#   - Restart Heat Server 
+- name: Sync Heat Database
+  shell: /bin/sh -c "heat-manage db_sync" heat
+  when: result|changed
+
+- name: Restart Heat Server 
+  service: name={{ item }} state=restarted
+  with_items: 
+    - heat-api
+    - heat-api-cfn
+    - heat-engine
+  when: result|changed

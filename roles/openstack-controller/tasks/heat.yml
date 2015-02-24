@@ -1,0 +1,7 @@
+---
+# everything we need for heat
+- include: heat-packages.yml
+- include: heat-database.yml
+- include: heat-endpoint.yml
+- include: heat-users.yml
+- include: heat-configuration.yml

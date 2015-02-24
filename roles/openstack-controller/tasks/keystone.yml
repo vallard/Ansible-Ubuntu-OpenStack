@@ -9,8 +9,6 @@
 
 - name: Ensure Keystone Database is up. 
   mysql_db: name=keystone state=present
-  notify: 
-    - Initialize Keystone DB
 
 - name: Ensure local Keystone DB user works 
   mysql_user: name=keystone password={{ keystone_dbpassword }} host=localhost priv=keystone.*:ALL,GRANT state=present
@@ -24,7 +22,8 @@
 
 - name: Initialize Keystone DB
   shell: /bin/sh -c "keystone-manage db_sync" keystone
-  when: result|changed
+  #when: result|changed
 
 - name: Restart Keystone
   service: name=keystone state=restarted
+  #when: result|changed

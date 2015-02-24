@@ -6,12 +6,14 @@ glance_dbpassword: Cisco.123
 nova_dbpassword: Cisco.123
 neutron_dbpassword: Cisco.123
 cinder_dbpassword: Cisco.123
+heat_dbpassword: Cisco.123
 
 keystone_admin_password: Cisco.123
 glance_admin_password: Cisco.123
 nova_admin_password: Cisco.123
 neutron_admin_password: Cisco.123
 cinder_admin_password: Cisco.123
+heat_admin_password: Cisco.123
 
 rabbitmq_password: Cisco.123
 rabbitmq_user: openstack

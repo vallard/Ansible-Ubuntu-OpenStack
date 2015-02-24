@@ -114,13 +114,13 @@
       value:    1:1000
 
 # security group
-    - section:  security_group
+    - section:  securitygroup
       option:   enable_security_group
       value:    True
-    - section:  security_group
+    - section:  securitygroup
       option:   enable_ipset
       value:    True
-    - section:  security_group
+    - section:  securitygroup
       option:   firewall_driver
       value:    neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 

@@ -137,13 +137,13 @@
       value:    1:1000
 
 # security group
-    - section:  security_group
+    - section:  securitygroup
       option:   enable_security_group
       value:    True
-    - section:  security_group
+    - section:  securitygroup
       option:   enable_ipset
       value:    True
-    - section:  security_group
+    - section:  securitygroup
       option:   firewall_driver
       value:    neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 
@@ -217,6 +217,9 @@
       option:   use_namespaces
       value:    True
     - section:  DEFAULT
+      option:   dhcp_delete_namespaces
+      value:    True
+    - section:  DEFAULT
       option:   verbose
       value:    True
     - section:  DEFAULT
@@ -279,6 +282,10 @@
   with_items: 
     - neutron-server
     - openvswitch-switch
+    - neutron-plugin-openvswitch-agent
+    - neutron-l3-agent
+    - neutron-dhcp-agent
+    - neutron-metadata-agent
 
 - name: ensure the external bridge is up. 
   openvswitch_bridge: bridge={{external_network_bridge_interface}} state=present

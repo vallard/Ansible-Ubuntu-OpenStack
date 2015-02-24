@@ -1,0 +1,21 @@
+# Configures Heat Users
+---
+
+- name: Ensure heat user is created
+  keystone_user: user=heat tenant=service password={{ heat_admin_password }} token={{ admin_token }} endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+# user-role-add
+- name: Ensure heat user role is ready
+  keystone_user: user=heat tenant=service role=admin token={{ admin_token }} endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+# This for tenants: http://docs.openstack.org/juno/install-guide/install/apt/content/heat-install-controller-node.html
+# role-create
+#- name: Ensure heat_stack_owner role is created
+#  keystone_user: role=heat_stack_owner token={{ admin_token }} endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+
+# role-create
+#- name: Ensure heat_stack_user role is created
+#  keystone_user: role=heat_stack_user token={{ admin_token }} endpoint=http://{{ inventory_hostname }}:35357/v2.0
+
+#- name: Ensure each owner has the heat stack owner to it: e.g: keyston

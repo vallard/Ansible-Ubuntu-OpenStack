@@ -1,0 +1,18 @@
+# Installs and Configures Heat Database
+---
+
+# install the database layer. 
+- name: Ensure Heat Database is up. 
+  mysql_db: name=heat state=present
+
+- name: Ensure local Heat DB user works 
+  mysql_user: name=heat 
+              password={{ heat_dbpassword }} 
+              host=localhost 
+              priv=heat.*:ALL,GRANT state=present
+
+- name: Ensure remote Heat DB user works
+  mysql_user: name=heat 
+              password={{ heat_dbpassword }} 
+              host=% 
+              priv=heat.*:ALL,GRANT state=present
